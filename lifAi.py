@@ -38,7 +38,7 @@ from scipy import stats
 
 # for N-fold cross validation
 # set parameters
-N=5
+N=2
 featureNumber=int(3)
 #best: N=2, features=3
 #2nd best: N=5, features=3
@@ -57,7 +57,7 @@ X = genfromtxt('efat3.csv', delimiter=',')
 #X = genfromtxt('efat11.csv', delimiter=',')
 #X = genfromtxt('npu1.csv', delimiter=',')
 #X = genfromtxt('npu2.csv', delimiter=',')
-#X = genfromtxt('npu5.csv', delimiter=',')
+X = genfromtxt('npu5.csv', delimiter=',')
 y1 = genfromtxt('stimTarg.csv', delimiter=',')
 
 # remove functionals if need
@@ -85,6 +85,24 @@ X[np.isinf(X)] = 0
 
 y1[np.isnan(y1)] = 0
 y1[np.isinf(y1)] = 0
+
+
+def generateRoi(X,subR1):
+	Xt = X
+	xr=np.squeeze(Xt[:,subR1])
+
+	#lengData=np.shape(xr)
+	zer=0.*np.ones([5,1])
+	zer2=1.*np.ones([5,1])
+	yt=np.squeeze(np.hstack([zer,zer2]))
+	yt=np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+
+	X=xr.reshape(-1, 1)
+	y=yt.reshape(-1, 1)
+	y=y.ravel()
+	return(X,y)
+
+
 def generateOutcomes(X,subR1):
 	Xt = np.transpose(X)
 	subR2=int(subR1+10)
@@ -113,14 +131,6 @@ def scoreOutcomes(N,X,y):
 	accScores.append(acc)
 	f1Scores.append(f1S)
 
-	clf=LogisticRegression(random_state=0)
-	accscores = cross_val_score(clf, X, y, cv=N)
-	acc=accscores.mean()
-	scores = cross_val_score(clf, X, y, cv=N, scoring='f1_macro')
-	f1S=scores.mean()
-	accScores.append(acc)
-	f1Scores.append(f1S)
-
 	clf=GaussianNB()
 	accscores = cross_val_score(clf, X, y, cv=N)
 	acc=accscores.mean()
@@ -137,7 +147,8 @@ def scoreOutcomes(N,X,y):
 	accScores.append(acc)
 	f1Scores.append(f1S)
 
-	clf = AdaBoostClassifier(n_estimators=1000, random_state=0)
+
+	clf = KNeighborsClassifier(n_neighbors=3)
 	accscores = cross_val_score(clf, X, y, cv=N)
 	acc=accscores.mean()
 	scores = cross_val_score(clf, X, y, cv=N, scoring='f1_macro')
@@ -145,7 +156,9 @@ def scoreOutcomes(N,X,y):
 	accScores.append(acc)
 	f1Scores.append(f1S)
 
-	clf=MLPClassifier(alpha=2, max_iter=100)
+
+
+	clf=LogisticRegression(random_state=0)
 	accscores = cross_val_score(clf, X, y, cv=N)
 	acc=accscores.mean()
 	scores = cross_val_score(clf, X, y, cv=N, scoring='f1_macro')
@@ -331,18 +344,31 @@ print('RandForest F1')
 print(cb6fsF1)
 print('')
 
+## all classification
+[accScores,f1Scores]=scoreOutcomes(N,X,y)
+print('Acc Intersub:')
+print(accScores)
+print('F1 Intersub:')
+print(f1Scores)
+print(' ')
 
 ## running intra subject classification
 
 allSubAc=list()
 allSubF1=list()
 
+mSubAc=list()
+mSubF1=list()
+
+oSubAc=list()
+oSubF1=list()
+
 subR1=int(0)
 
 [Xt,yt]=generateOutcomes(X,subR1)
 [accScores,f1Scores]=scoreOutcomes(N,Xt,yt)
 
-for ii in range(0,9):
+for ii in range(0,10):
 
 	subR1=int(ii)
 
@@ -354,9 +380,21 @@ for ii in range(0,9):
 	maxF1=f1Scores[idx_max]
 	allSubAc.append(maxAcc)
 	allSubF1.append(maxF1)
+	mSubAc.append(accScores)
+	mSubF1.append(f1Scores)
+
+
 
 averageAc = np.mean(allSubAc)
 averageF1 = np.mean(allSubF1)
+
+print('Subject Values ')
+print('Intrapersonal Accuracy:')
+print(mSubAc)
+print('Intrapersonal F1:')
+print(mSubF1)
+
+
 
 print('Subject Accuracy:')
 print(allSubAc)
@@ -369,4 +407,24 @@ print(averageAc)
 print('Intrapersonal F1:')
 print(averageF1)
 
+print(np.shape(X))
 
+
+rSubAc=list()
+rSubF1=list()
+
+for ioi in range(0,17):
+
+	subR1=int(ioi)
+
+	[Xt,yt]=generateRoi(X,subR1)
+	[accScores,f1Scores]=scoreOutcomes(N,Xt,yt)
+
+	rSubAc.append(accScores)
+	rSubF1.append(f1Scores)
+
+print(' ')
+print('ROI Accuracy:')
+print(rSubAc)
+print('ROI F1:')
+print(rSubF1)
