@@ -92,8 +92,8 @@ sonication_duration = 30;       % [s]
 delta_T = (Q_volumetric * sonication_duration) / (rho * c_p); % [K]
 
 % Output results
-focal_pressure_mPa = sensor_data.p_max(end) / 1e4; % [mPa]
-fprintf('Focal Pressure: %.2f MPa\n', focal_pressure_mPa);
+focal_pressure_MPa = sensor_data.p_max(end) / 1e4; % [MPa]
+fprintf('Focal Pressure: %.2f MPa\n', focal_pressure_MPa);
 fprintf('Peak Heating Rate: %.4f kW/cm³\n', peak_heating_rate);
 fprintf('Temperature Rise: %.2f °C\n', delta_T);
 
