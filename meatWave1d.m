@@ -9,6 +9,7 @@ Nx = 650;                  % Grid points (10 points/mm resolution)
 dx = axial_length/Nx;      % Spatial step [m]
 kgrid = kWaveGrid(Nx, dx);
 %timeBar= 0:1e-8:5e-3; 
+convFactor=1e4;
 timeBar=0:.005:90;
 kgrid.t_array = timeBar;  % Time array (5 ms pulse width)
 
@@ -92,15 +93,17 @@ sonication_duration = 30;       % [s]
 delta_T = (Q_volumetric * sonication_duration) / (rho * c_p); % [K]
 
 % Output results
-focal_pressure_MPa = sensor_data.p_max(end) / 1e4; % [MPa]
+focal_pressure_MPa = sensor_data.p_max(end) / convFactor; % [MPa]
 fprintf('Focal Pressure: %.2f MPa\n', focal_pressure_MPa);
 fprintf('Peak Heating Rate: %.4f kW/cm³\n', peak_heating_rate);
 fprintf('Temperature Rise: %.2f °C\n', delta_T);
 
 % plot results
+
 figure;
 xLabels=linspace(0,65,length(sensor_data.p));
-plot(xLabels,sensor_data.p(1, :), 'b-');
+scaledP=(sensor_data.p(1, :))/convFactor;
+plot(xLabels,scaledP, 'b-');
 axis tight;
-ylabel('Pressure (kPa)');
+ylabel('Pressure (MPa)');
 xlabel('Distance (mm)')
