@@ -103,4 +103,4 @@ xLabels=linspace(0,65,length(sensor_data.p));
 plot(xLabels,sensor_data.p(1, :), 'b-');
 axis tight;
 ylabel('Pressure (kPa)');
-
+xlabel('Distance (mm)')
